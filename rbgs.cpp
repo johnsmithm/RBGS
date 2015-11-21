@@ -2,6 +2,7 @@
 #include <cassert>
 #include<iostream>
 #include "RBGS.h"
+#include<stdlib>
 
 #include "Timer.h"
 
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]){
    likwid_markerClose();
 #endif
 
-  
+   fast.print_gnuplot();
    cout<<"time:"<<time<<'\n';
    cout<<"R:"<<r<<'\n';
 
