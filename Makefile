@@ -1,31 +1,17 @@
 CXX = g++
-CXXFLAGS = -std=c++0x -Wall -Wextra -Wshadow -Werror -O3 -DNDEBUG
+CXXFLAGS = -std=c++11 -Wall -Wextra -Wshadow -Werror -fopenmp -O3 -DNDEBUG -ftree-vectorizer-verbose=1 -ffast-math -march=native
 
-INCLUDES =
-LDFLAGS =
-LIBS =
+TARGET =rbgs
+HXX=RBGS.h Timer.h
 
-# blas
-INCLUDES += -I/usr/lib64/atlas/include/
-LDFLAGS += -L/usr/lib64/atlas/
-LIBS += -lcblas -latlas
-
-# likwid
-CXXFLAGS += -DUSE_LIKWID -pthread
-INCLUDES += -I/usr/local/likwid-3.1.2/include/
-LDFLAGS += -L/usr/local/likwid-3.1.2/lib/
-LIBS += -llikwid
-
-TARGET = matmult
 OBJS = $(TARGET).o
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS) Makefile
+$(TARGET): $(OBJS) $(HXX) 
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBS)
-
-$(TARGET).o: $(TARGET).cpp Timer.h Makefile
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $(TARGET).cpp
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $<
 
 clean:
-	@$(RM) -rf *.o $(TARGET)
+	rm -rf *.o $(TARGET)

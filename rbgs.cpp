@@ -1,9 +1,9 @@
 #include<fstream>
 #include <cassert>
 #include<iostream>
-#include "RBGS.h"
-#include<stdlib>
+#include <stdlib.h>
 
+#include "RBGS.h"
 #include "Timer.h"
 
 #ifdef USE_LIKWID
@@ -16,20 +16,20 @@ using namespace std;
 
 
 int main(int argc, char *argv[]){
+    (void) argc; //to suppress Warnings about unused argc
     assert(argc>2);
     int nx = atoi(argv[1]);
     int ny = atoi(argv[2]);
     int c  = atoi(argv[3]);
-    int nrthreads = atoi(argv[3]);
     
 #ifdef USE_LIKWID
    likwid_markerInit();
    likwid_markerStartRegion( "RBGS" );
 #endif
 
+    RBGS fast(nx,ny,c);
     siwir::Timer timer;
     
-    RBGS fast(nx,ny,c,nrthreads);
     double  r = fast.solve();
     
     double time = timer.elapsed();
