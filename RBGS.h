@@ -39,8 +39,9 @@ class RBGS{
         
        // std::cout<<nx__<<" "<<nx_<<'\n';
         int x;
+        --nx__;
        for(int it=0;it<c_;++it){//nr iterations
-           //black
+          /* //black
             for(int i=1;i<ny_-1;++i){//every black grid point                
                 for(int j=(i%2==0?2:1);j<nx__-1;j+=2){
                     
@@ -58,25 +59,25 @@ class RBGS{
                                                    
                 }
             }
+           */
            
-           /*
             for(int i=1;i<ny_-1;++i){//every black grid point                
-                for(int j=(i%2==0?2:1);j<nx__-1;j+=2){
+                for(int j=(i%2==0?2:1);j<nx__;j+=2){
                     x = j/2+i*(nx_2);
                     ub[x] = (1.0/mst)*(f[j+i*nx_] + yst*(ur[x+nx_2]+ur[x-nx_2])+
-                                                   xst*(ur[(j-1)/2+i*(nx_2)]+ur[(j+1)/2+i*(nx_2)]) );
+                                                   xst*(ur[x]+ur[(i%2==0?x-1:x+1)]) );
                 }
              
             }           
            //red
             for(int i=1;i<ny_-1;++i){//every red grid point
-                for(int j=(i%2==0?1:2);j<nx__-1;j+=2){
+                for(int j=(i%2==0?1:2);j<nx__;j+=2){
                     x = j/2+i*(nx_2);
                     ur[x] = (1.0/mst)*(f[j+i*nx_] + yst*(ub[x+nx_2]+ub[x-nx_2]) +
-                                                   xst*(ub[(j-1)/2+i*(nx_2)]+ub[(j+1)/2+i*(nx_2)]) );
+                                                   xst*(ub[x]+ub[(i%2==1?x-1:x+1)]) );
                                                    
                 }
-            }*/
+            }
            
            /*
            //black
