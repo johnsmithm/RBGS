@@ -1,7 +1,7 @@
 #include<math.h>
 #include<iostream>
 #include<fstream>
-
+using namespace std;
 class RBGS{
     public:
     RBGS(int nx,int ny,int c,int nrthreads):nx_(nx),ny_(ny),c_(c),nrthreads_(nrthreads),pi(3.141592653589793){
@@ -32,44 +32,104 @@ class RBGS{
         int nx__ = nx_ ;
         if(!even)nx__--;
         
+        int nx_2 = nx_/2;
+        int pg2 = pg/2;
+        int pg2_ = pg2 - nx_2;
+        double *utop, *ubottom, *uleft , * uright, *ff;
+        
        // std::cout<<nx__<<" "<<nx_<<'\n';
         
        for(int it=0;it<c_;++it){//nr iterations
-           //black
+          /* //black
             for(int i=1;i<ny_-1;++i){//every black grid point                
                 for(int j=(i%2==0?2:1);j<nx__-1;j+=2){
-                    /*TODO non-temporal writes*/
-                    //u[i*nx_+j] =(1.0/mst)*(f[i*nx_+j] + xst*(u[i*nx_+j+1]+u[i*nx_+j-1])+yst*(u[j+(i+1)*nx_]+u[j+(i-1)*nx_]));
                     
-                    int x = i*(nx_/2)+j/2;
-   //  std::cout<<x<<"-"<<(i*(nx_/2)+(j+1)/2)<<" "<<(i*(nx_/2)+(j-1)/2)<<" "<<((i+1)*((nx_)/2)+(j)/2)<<" "<<(i-1)*((nx_)/2)+(j)/2<<'\n';
-                    ub[x] = (1.0/mst)*(f[i*nx_+j] +
-                                                   //xst*(ur[x]+ur[x+1])+
-                                                   //yst*(ur[x+nx_/2]+ur[x-nx_/2]) );
-                                                   xst*(ur[i*(nx_/2)+(j+1)/2]+ur[i*(nx_/2)+(j-1)/2]) +
-                                                   yst*(ur[(i-1)*((nx_)/2)+(j)/2]+ur[(1+i)*((nx_)/2)+(j)/2]) );
+                    ub[j/2+i*(nx_/2)] = (1.0/mst)*(f[j+i*nx_] + yst*(ur[(j)/2+(i-1)*(nx_2)]+ur[(j)/2+(1+i)*(nx_2)])+
+                                                   xst*(ur[(j-1)/2+i*(nx_2)]+ur[(j+1)/2+i*(nx_2)]) );
                 }
-               // std::cout<<'\n';
-            } 
-          // break;
+             
+            }           
            //red
             for(int i=1;i<ny_-1;++i){//every red grid point
                 for(int j=(i%2==0?1:2);j<nx__-1;j+=2){
-                    /*TODO non-temporal writes*/
-                    //u[i*nx_+j] =(1.0/mst)*(f[i*nx_+j] + (xst*(u[i*nx_+j+1]+u[i*nx_+j-1])+yst*(u[j+(i+1)*nx_]+u[j+(i-1)*nx_])));
-                    int x = i*(nx_/2)+j/2;
-                    ur[x] = (1.0/mst)*(f[i*nx_+j] +
-                                                   //xst*(ub[x]+ub[x+1])+
-                                                   //yst*(ub[x+nx_/2]+ub[x-nx_/2]) );
-                                                   xst*(ub[i*(nx_/2)+(j+1)/2]+ub[i*(nx_/2)+(j-1)/2]) +
-                                                   yst*(ub[(i-1)*((nx_)/2)+(j)/2]+ub[(1+i)*((nx_)/2)+(j)/2]) );
+                    
+                    ur[j/2+i*(nx_/2)] = (1.0/mst)*(f[j+i*nx_] + yst*(ub[(j)/2+(i-1)*(nx_2)]+ub[(j)/2+(1+i)*(nx_2)]) +
+                                                   xst*(ub[(j-1)/2+i*(nx_2)]+ub[(j+1)/2+i*(nx_2)]) );
+                                                   
                 }
             }
-           //view(ub,ur); 
-           //break;
-          // if(it%100==0)std::cout<<residual_norm()<<"\n";
+           */
+           
+           //black
+            double midle;
+            for(int i=1;i<ny_-1;++i){//every black grid point                
+                for(int j=(i%2==0?2:1);j<nx__-1;j+=4){
+                    midle = ur[i*(nx_2)+(j+1)/2];
+                    ub[i*(nx_/2)+j/2] = (1.0/mst)*(f[i*nx_+j] + yst*(ur[(i-1)*(nx_2)+(j)/2]+ur[(1+i)*(nx_2)+(j)/2])+
+                                                   xst*(ur[i*(nx_2)+(j-1)/2]+midle) );
+                    ub[i*(nx_/2)+j/2+1] = (1.0/mst)*(f[i*nx_+j+1] + yst*(ur[(i-1)*(nx_2)+(j)/2+1]+ur[(1+i)*(nx_2)+(j)/2+1])+
+                                                   xst*(ur[i*(nx_2)+(j+1)/2+1]+midle) );
+            //        cout<<(i*(nx_/2)+j/2)<<"|"<<(i*(nx_/2)+j/2+1)<<" ";
+                }
+               /* if(nx__%4>2){
+                    ub[i*(nx_/2)+j/2] = (1.0/mst)*(f[i*nx_+j] + yst*(ur[(i-1)*(nx_2)+(j)/2]+ur[(1+i)*(nx_2)+(j)/2])+
+                                                   xst*(ur[i*(nx_2)+(j-1)/2]+midle) );
+                }*/
+           //  cout<<endl;
+            }           
+           //red
+          // cout<<"red \n";
+            for(int i=1;i<ny_-1;++i){//every red grid point
+                for(int j=(i%2==0?1:2);j<nx__-1;j+=4){
+                    midle = ub[i*(nx_2)+(j+1)/2];
+                    ur[i*(nx_/2)+j/2] = (1.0/mst)*(f[i*nx_+j] + yst*(ub[(i-1)*(nx_2)+(j)/2]+ub[(1+i)*(nx_2)+(j)/2]) +
+                                                   xst*(ub[i*(nx_2)+(j-1)/2]+midle) );
+                    ur[i*(nx_/2)+j/2+1] = (1.0/mst)*(f[i*nx_+j+1] + yst*(ub[(i-1)*(nx_2)+(j)/2+1]+ub[(1+i)*(nx_2)+(j)/2+1]) +
+                                                   xst*(ub[i*(nx_2)+(j-1)/2+1]+midle) );
+                  //       cout<<(i*(nx_/2)+j/2)<<"|"<<(i*(nx_/2)+j/2+1)<<" ";                          
+                }
+               // cout<<endl;
+            }
+           
+          /*
+          for(int i=nx_2;i<pg2_;++i){//black  
+             if((i/nx_2)%2==0){//black begin
+                if(i%nx_2==0 || (!even && i%nx_2==nx_2-1))continue; //check boundary 
+                uleft  = (ur+i-1);
+                ff = (f+i+i); 
+             }else{
+                if(i%nx_==nx_-1)continue; //check boundary 
+                uleft  = (ur+i+1);
+                ff = (f+i+i+1); 
+             }
+             utop    = (ur+i+nx_2);
+             ubottom = (ur+i-nx_2);
+             uright  = (ur+i); 
+             ub[i] = (1.0/mst)*(*ff + xst*( *uright+ *uleft )+yst*( *utop+ *ubottom ));  
+          }   
+           
+          for(int i=nx_2;i<pg2_;++i){//red
+              if((i/nx_2)%2==0){//black begin
+                if(i%nx_2==nx_2-1 )continue;//check boundary  
+                uleft  = (ub+i+1);
+                ff = (f+i+i+1); 
+             }else{//red begin
+                if(i%nx_2==0 || (!even && i%nx_2==nx_2-1))continue;//check boundary 
+                uleft  = (ub+i-1);
+                ff = (f+i+i); 
+             }
+             utop    = (ub+i+nx_2);
+             ubottom = (ub+i-nx_2);
+             uright  = (ub+i);               
+             ur[i] = (1.0/mst)*(*ff + xst*( *uright+ *uleft )+yst*( *utop+ *ubottom ));  
+          }
+           
+           */
+           
+           if(it%100==0)std::cout<<residual_norm()<<"\n";
            
        }
+         std::cout<<nx_2<<" "<<pg2_<<"\n";
         //view(ub,ur);
        return  residual_norm();
     }
