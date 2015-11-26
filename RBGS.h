@@ -38,13 +38,13 @@ class RBGS{
         double *utop, *ubottom, *uleft , * uright, *ff;
         
        // std::cout<<nx__<<" "<<nx_<<'\n';
-        
+        int x;
        for(int it=0;it<c_;++it){//nr iterations
-          /* //black
+           //black
             for(int i=1;i<ny_-1;++i){//every black grid point                
                 for(int j=(i%2==0?2:1);j<nx__-1;j+=2){
                     
-                    ub[j/2+i*(nx_/2)] = (1.0/mst)*(f[j+i*nx_] + yst*(ur[(j)/2+(i-1)*(nx_2)]+ur[(j)/2+(1+i)*(nx_2)])+
+                    ub[j/2+i*(nx_2)] = (1.0/mst)*(f[j+i*nx_] + yst*(ur[(j)/2+(i-1)*(nx_2)]+ur[(j)/2+(1+i)*(nx_2)])+
                                                    xst*(ur[(j-1)/2+i*(nx_2)]+ur[(j+1)/2+i*(nx_2)]) );
                 }
              
@@ -53,13 +53,32 @@ class RBGS{
             for(int i=1;i<ny_-1;++i){//every red grid point
                 for(int j=(i%2==0?1:2);j<nx__-1;j+=2){
                     
-                    ur[j/2+i*(nx_/2)] = (1.0/mst)*(f[j+i*nx_] + yst*(ub[(j)/2+(i-1)*(nx_2)]+ub[(j)/2+(1+i)*(nx_2)]) +
+                    ur[j/2+i*(nx_2)] = (1.0/mst)*(f[j+i*nx_] + yst*(ub[(j)/2+(i-1)*(nx_2)]+ub[(j)/2+(1+i)*(nx_2)]) +
                                                    xst*(ub[(j-1)/2+i*(nx_2)]+ub[(j+1)/2+i*(nx_2)]) );
                                                    
                 }
             }
-           */
            
+           /*
+            for(int i=1;i<ny_-1;++i){//every black grid point                
+                for(int j=(i%2==0?2:1);j<nx__-1;j+=2){
+                    x = j/2+i*(nx_2);
+                    ub[x] = (1.0/mst)*(f[j+i*nx_] + yst*(ur[x+nx_2]+ur[x-nx_2])+
+                                                   xst*(ur[(j-1)/2+i*(nx_2)]+ur[(j+1)/2+i*(nx_2)]) );
+                }
+             
+            }           
+           //red
+            for(int i=1;i<ny_-1;++i){//every red grid point
+                for(int j=(i%2==0?1:2);j<nx__-1;j+=2){
+                    x = j/2+i*(nx_2);
+                    ur[x] = (1.0/mst)*(f[j+i*nx_] + yst*(ub[x+nx_2]+ub[x-nx_2]) +
+                                                   xst*(ub[(j-1)/2+i*(nx_2)]+ub[(j+1)/2+i*(nx_2)]) );
+                                                   
+                }
+            }*/
+           
+           /*
            //black
             double midle;
             for(int i=1;i<ny_-1;++i){//every black grid point                
@@ -69,16 +88,12 @@ class RBGS{
                                                    xst*(ur[i*(nx_2)+(j-1)/2]+midle) );
                     ub[i*(nx_/2)+j/2+1] = (1.0/mst)*(f[i*nx_+j+1] + yst*(ur[(i-1)*(nx_2)+(j)/2+1]+ur[(1+i)*(nx_2)+(j)/2+1])+
                                                    xst*(ur[i*(nx_2)+(j+1)/2+1]+midle) );
-            //        cout<<(i*(nx_/2)+j/2)<<"|"<<(i*(nx_/2)+j/2+1)<<" ";
-                }
-               /* if(nx__%4>2){
-                    ub[i*(nx_/2)+j/2] = (1.0/mst)*(f[i*nx_+j] + yst*(ur[(i-1)*(nx_2)+(j)/2]+ur[(1+i)*(nx_2)+(j)/2])+
-                                                   xst*(ur[i*(nx_2)+(j-1)/2]+midle) );
-                }*/
-           //  cout<<endl;
+                    cout<<(i*(nx_/2)+j/2)<<"|"<<(i*(nx_/2)+j/2+1)<<" ";
+                }               
+             cout<<endl;
             }           
            //red
-          // cout<<"red \n";
+           cout<<"red \n";
             for(int i=1;i<ny_-1;++i){//every red grid point
                 for(int j=(i%2==0?1:2);j<nx__-1;j+=4){
                     midle = ub[i*(nx_2)+(j+1)/2];
@@ -86,11 +101,11 @@ class RBGS{
                                                    xst*(ub[i*(nx_2)+(j-1)/2]+midle) );
                     ur[i*(nx_/2)+j/2+1] = (1.0/mst)*(f[i*nx_+j+1] + yst*(ub[(i-1)*(nx_2)+(j)/2+1]+ub[(1+i)*(nx_2)+(j)/2+1]) +
                                                    xst*(ub[i*(nx_2)+(j-1)/2+1]+midle) );
-                  //       cout<<(i*(nx_/2)+j/2)<<"|"<<(i*(nx_/2)+j/2+1)<<" ";                          
+                         cout<<(i*(nx_/2)+j/2)<<"|"<<(i*(nx_/2)+j/2+1)<<" ";                          
                 }
-               // cout<<endl;
+                cout<<endl;
             }
-           
+           */
           /*
           for(int i=nx_2;i<pg2_;++i){//black  
              if((i/nx_2)%2==0){//black begin
