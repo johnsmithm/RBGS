@@ -126,39 +126,38 @@ int x;
             }
         }
         double residual_norm(){
-            double r=0;
+            double r1=0;
             double f_au;
             //TODO OpenMP.
             //check if we have a padding
             int nx__ = nx_;
             if(!even)--nx__;
-
+            int x;
+            int nx_2=nx_/2;
+            #pragma omp parallel for private(x,f_au) schedule( static ) reduction(+:r1)
             for(int i=1;i<ny_-1;++i){//every red grid point
                 for(int j=(i%2==0?2:1);j<nx__-1;j+=2){                   
 
-                    int x = i*(nx_/2)+j/2;
+                    x = i*(nx_/2)+j/2;
                     f_au =f[i*nx_+j] - mst * ub[x] +
-                        //xst*(ur[x]+ur[x+1]) +
-                        //yst*(ur[x+nx_/2]+ur[x-nx_/2]) ;
-                        xst*(ur[i*(nx_/2)+(j+1)/2]+ur[i*(nx_/2)+(j-1)/2]) +
-                        yst*(ur[(i-1)*((nx_)/2)+(j)/2]+ur[(1+i)*((nx_)/2)+(j)/2]) ;
-                    r = r  + f_au*f_au;
+                        yst*(ur[x+nx_2]+ur[x-nx_2])+
+                        xst*(ur[x]+ur[((i)%2==0?x-1:x+1)]) ;
+                    r1 = r1  + f_au*f_au;
                 }
             }
+            double r2=0;
+            #pragma omp parallel for private(x,f_au) schedule( static ) reduction(+:r2)
             for(int i=1;i<ny_-1;++i){//every red grid point
-                for(int j=(i%2==0?1:2);j<nx__-1;j+=2){                   
+                for(int j=(i%2==0?1:2);j<nx__-1;j+=2){                 
 
-                    //f_au = f[j+i*nx_] - mst*u[j+i*nx_] + xst*(u[i*nx_+j+1]+u[i*nx_+j-1])+yst*(u[j+(i+1)*nx_]+u[j+(i-1)*nx_]);
-                    int x = i*(nx_/2)+j/2;
+                     x = i*(nx_/2)+j/2;
                     f_au =f[i*nx_+j] - mst * ur[x] +
-                        //xst*(ub[x]+ub[x+1]) +
-                        //yst*(ub[x+nx_/2]+ub[x-nx_/2]) ;
-                        xst*(ub[i*(nx_/2)+(j+1)/2]+ub[i*(nx_/2)+(j-1)/2]) +
-                        yst*(ub[(i-1)*((nx_)/2)+(j)/2]+ub[(1+i)*((nx_)/2)+(j)/2]) ;
-                    r = r  + f_au*f_au;
+                         yst*(ub[x+nx_2]+ub[x-nx_2])+
+                        xst*(ub[x]+ub[((i)%2==1?x-1:x+1)]);
+                    r2 = r2  + f_au*f_au;
                 }
             }
-            return sqrt(r);
+            return sqrt(r1+r2);
         }
 
 
