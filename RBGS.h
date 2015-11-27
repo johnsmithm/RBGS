@@ -33,43 +33,31 @@ class RBGS{
             if(!even)nx__--;
 
             // std::cout<<nx__<<" "<<nx_<<'\n';
-
-            for(int it=0;it<c_;++it){//nr iterations
-                //black
-        #pragma omp parallel for
-                for(int i=1;i<ny_-1;++i){//every black grid point                
-                    for(int j=(i%2==0?2:1);j<nx__-1;j+=2){
-                        /*TODO non-temporal writes*/
-                        //u[i*nx_+j] =(1.0/mst)*(f[i*nx_+j] + xst*(u[i*nx_+j+1]+u[i*nx_+j-1])+yst*(u[j+(i+1)*nx_]+u[j+(i-1)*nx_]));
-
-                        int x = i*(nx_/2)+j/2;
-                        ub[x] = (1.0/mst)*(f[i*nx_+j] +
-                                //xst*(ur[x]+ur[x+1])+
-                                //yst*(ur[x+nx_/2]+ur[x-nx_/2]) );
-                            xst*(ur[i*(nx_/2)+(j+1)/2]+ur[i*(nx_/2)+(j-1)/2]) +
-                            yst*(ur[(i-1)*((nx_)/2)+(j)/2]+ur[(1+i)*((nx_)/2)+(j)/2]) );
-                    }
-                    // std::cout<<'\n';
-                } 
-                // break;
-                //red
-        #pragma omp parallel for
-                for(int i=1;i<ny_-1;++i){//every red grid point
-                    for(int j=(i%2==0?1:2);j<nx__-1;j+=2){
-                        /*TODO non-temporal writes*/
-                        //u[i*nx_+j] =(1.0/mst)*(f[i*nx_+j] + (xst*(u[i*nx_+j+1]+u[i*nx_+j-1])+yst*(u[j+(i+1)*nx_]+u[j+(i-1)*nx_])));
-                        int x = i*(nx_/2)+j/2;
-                        ur[x] = (1.0/mst)*(f[i*nx_+j] +
-                                //xst*(ub[x]+ub[x+1])+
-                                //yst*(ub[x+nx_/2]+ub[x-nx_/2]) );
-                            xst*(ub[i*(nx_/2)+(j+1)/2]+ub[i*(nx_/2)+(j-1)/2]) +
-                            yst*(ub[(i-1)*((nx_)/2)+(j)/2]+ub[(1+i)*((nx_)/2)+(j)/2]) );
-                    }
+int x;
+        --nx__;
+	double mst_1 = 1.0/mst;
+	int nx_2 = nx_/2;
+            for(int it=0;it<c_;++it){
+	      #pragma omp parallel for private(x) schedule( static )
+            for(int i=1;i<ny_-1;++i){//every black grid point                
+                for(int j=(i%2==0?2:1);j<nx__;j+=2){
+                    x = j/2+i*(nx_2);
+                    ub[x] = mst_1*(f[j+i*nx_] + yst*(ur[x+nx_2]+ur[x-nx_2])+
+                                                   xst*(ur[x]+ur[(i%2==0?x-1:x+1)]) );
                 }
-                //view(ub,ur); 
-                //break;
-                // if(it%100==0)std::cout<<residual_norm()<<"\n";
-
+             
+            }           
+           //red
+           #pragma omp parallel for private(x) schedule( static )
+            for(int i=1;i<ny_-1;++i){//every red grid point
+                for(int j=(i%2==0?1:2);j<nx__;j+=2){
+                    x = j/2+i*(nx_2);
+                    ur[x] =mst_1*(f[j+i*nx_] + yst*(ub[x+nx_2]+ub[x-nx_2]) +
+                                                   xst*(ub[x]+ub[(i%2==1?x-1:x+1)]) );
+                                                   
+                }
+            }
+	      
             }
             //view(ub,ur);
             return  residual_norm();
@@ -86,7 +74,26 @@ class RBGS{
 
             //TODO  threads
 
-        #pragma omp parallel for
+	     //first touch
+       int nx__ = nx_ ;
+        if(!even)nx__--;        
+        int nx_2 = nx_/2;
+        int x;
+        --nx__;
+        
+       #pragma omp parallel for private(x) schedule( static )
+            for(int i=1;i<ny_-1;++i){//every black grid point                
+                for(int j=(i%2==0?2:1);j<nx__;j+=2){
+                    x = j/2+i*(nx_2);
+                    ub[x] = 0;
+                    f[j+i*nx_]=0; 
+                    ur[x+nx_2]=0;
+                    ur[x-nx_2]=0;
+                    ur[x]=0;
+                    ur[(i%2==0?x-1:x+1)]=0;
+                }             
+            }     
+	    
             for(int i=0;i<ny_;++i)
                 for(int j=0;j<nx_;++j){
                     f[j+i*nx_]=C*sin(freqx*j)*sinh(freqy*i);//4π^2 sin(2πx) sinh(2πy)
@@ -104,7 +111,6 @@ class RBGS{
                 ptrsecond = ur;   
             }    
             // if(ptrfirst==ur)std::cout<<"red first \n";
-        #pragma omp parallel for
             for(int i=0;i<nx_;i+=2){   
                 // std::cout<<((ny_-1)*(nx_/2)+i/2)<<'\n';
                 int g =(ny_-1)*(nx_/2)+i/2;
@@ -120,7 +126,7 @@ class RBGS{
             //check if we have a padding
             int nx__ = nx_;
             if(!even)--nx__;
-        #pragma omp parallel for
+
             for(int i=1;i<ny_-1;++i){//every red grid point
                 for(int j=(i%2==0?2:1);j<nx__-1;j+=2){                   
 
@@ -133,7 +139,6 @@ class RBGS{
                     r = r  + f_au*f_au;
                 }
             }
-        #pragma omp parallel for
             for(int i=1;i<ny_-1;++i){//every red grid point
                 for(int j=(i%2==0?1:2);j<nx__-1;j+=2){                   
 
