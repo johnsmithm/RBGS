@@ -166,6 +166,8 @@ class RBGS{
            f[j+i*nx_]=C*sin(freqx*j)*sinh(freqy*i);//4π^2 sin(2πx) sinh(2πy)
         }  
         
+        
+        
         for(int i=0;i<pg/2+1;++i)ur[i]=ub[i]=0;
         
        int last_row = (nx_/2)*(ny_-2);  
