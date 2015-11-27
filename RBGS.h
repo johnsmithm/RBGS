@@ -37,23 +37,29 @@ int x;
         --nx__;
 	double mst_1 = 1.0/mst;
 	int nx_2 = nx_/2;
+            
+            int end_for = pg - nx_;
+            int end;
+            
             for(int it=0;it<c_;++it){
 	      #pragma omp parallel for private(x) schedule( static )
-            for(int i=1;i<ny_-1;++i){//every black grid point                
-                for(int j=(i%2==0?2:1);j<nx__;j+=2){
-                    x = j/2+i*(nx_2);
-                    ub[x] = mst_1*(f[j+i*nx_] + yst*(ur[x+nx_2]+ur[x-nx_2])+
-                                                   xst*(ur[x]+ur[(i%2==0?x-1:x+1)]) );
+            for(int i=nx_;i<end_for;i+=nx_){//every black grid point   
+                end = i+nx__;
+                for(int j=((i/nx_)%2==0?2+i:1+i);j<end;j+=2){
+                    x = (j%nx_)/2+(j/nx_)*(nx_2);
+                    ub[x] = mst_1*(f[j] + yst*(ur[x+nx_2]+ur[x-nx_2])+
+                                                   xst*(ur[x]+ur[((j/nx_)%2==0?x-1:x+1)]) );
                 }
              
             }           
            //red
            #pragma omp parallel for private(x) schedule( static )
-            for(int i=1;i<ny_-1;++i){//every red grid point
-                for(int j=(i%2==0?1:2);j<nx__;j+=2){
-                    x = j/2+i*(nx_2);
-                    ur[x] =mst_1*(f[j+i*nx_] + yst*(ub[x+nx_2]+ub[x-nx_2]) +
-                                                   xst*(ub[x]+ub[(i%2==1?x-1:x+1)]) );
+            for(int i=nx_;i<end_for;i+=nx_){//every red grid point
+                end = i+nx__;
+                for(int j=((i/nx_)%2==0?1+i:2+i);j<end;j+=2){
+                    x = (j%nx_)/2+(j/nx_)*(nx_2);
+                    ur[x] =mst_1*(f[j] + yst*(ub[x+nx_2]+ub[x-nx_2]) +
+                                                   xst*(ub[x]+ub[((j/nx_)%2==1?x-1:x+1)]) );
                                                    
                 }
             }
