@@ -28,14 +28,15 @@ class RBGS{
         double solve(){
             size_t nx__ = nx_ ;
             if(!even)nx__--;
-            bool  odd;
+            //bool  odd;
             size_t x,inx_,inx_2,ny_1 = ny_-1;
             --nx__;
 	       double mst_1 = 1.0/mst;
-	       size_t nx_2 = nx_/2;            
-           for(size_t it=0;it<c_;++it){
+	       size_t nx_2 = nx_/2; 
+               size_t c__ = c_;      
+           for(size_t it=0;it<c__;++it){
                  #pragma omp parallel for private(x) schedule( static )
-                for(int i=1;i<ny_1;++i){//every black grid point  
+                for(size_t i=1;i<ny_1;++i){//every black grid point  
                     inx_ = i*nx_;
                     inx_2 = i*(nx_2);
                     for(size_t j=((i&1)?1:2);j<nx__;j=j+2){
