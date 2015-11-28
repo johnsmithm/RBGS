@@ -33,28 +33,31 @@ class RBGS{
             --nx__;
 	       double mst_1 = 1.0/mst;
 	       size_t nx_2 = nx_/2; 
-               size_t c__ = c_;      
+               size_t c__ = c_;   
+			double * ptr;
            for(size_t it=0;it<c__;++it){
-                 #pragma omp parallel for private(x) schedule( static )
+                 #pragma omp parallel for private(x,ptr) schedule( static )
                 for(size_t i=1;i<ny_1;++i){//every black grid point  
                     inx_ = i*nx_;
                     inx_2 = i*(nx_2);
                     for(size_t j=((i&1)?1:2);j<nx__;j=j+2){
                         x = j/2+inx_2;
-                        ub[x] = mst_1*(f[j+inx_] + yst*(ur[x+nx_2]+ur[x-nx_2])+
-                                                       xst*(ur[x]+ur[((i&1)?x+1:x-1)]) );
+						 ptr = (ur+x);
+                        *(ub+x) = mst_1*(*(f+j+inx_) + yst*(*(ptr+nx_2)+*(ptr-nx_2))+
+                                                       xst*(*ptr+ *((i&1)?ptr+1:ptr-1)) );
                     }
 
                 }           
                  //red
-                 #pragma omp parallel for private(x) schedule( static )
+                 #pragma omp parallel for private(x,ptr) schedule( static )
                 for(size_t i=1;i<ny_1;++i){//every red grid point
                     inx_ = i*nx_;
                     inx_2 = i*(nx_2);
                     for(size_t j=((i&1)?2:1);j<nx__;j=j+2){
                         x = j/2+inx_2;
-                        ur[x] =mst_1*(f[j+inx_] + yst*(ub[x+nx_2]+ub[x-nx_2]) +
-                                                       xst*(ub[x]+ub[((i&1)?x-1:x+1)]) );
+						ptr = (ub+x);
+                        *(ur+x) =mst_1*(*(f+j+inx_) + yst*(*(ptr+nx_2)+*(ptr-nx_2)) +
+                                                       xst*(*ptr+*((i&1)?ptr-1:ptr+1)) );
 
                     }
             }
@@ -176,9 +179,9 @@ class RBGS{
             //we make nx_ even
             bool even;
             //optimize implemantation: red point, black points
-            double *ur, * ub;
+            double * __restrict__ ur, * __restrict__ ub;
             //f points,
-            double *f;
+            double * __restrict__ f;
             //delta x, delta y, left and right points stencil, top and bottom point stencil, middle point stencil
             double hx_,hy_, xst, yst, mst;
             //nr of iteration, nr of grid points x ax, nr of grid points y ax, #points grid, # threads
