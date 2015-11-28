@@ -37,11 +37,11 @@ class RBGS{
 			double * ptr;
 			
            for(size_t it=0;it<c__;++it){
-			   inx_ = inx_2 = 0;
+			
                  #pragma omp parallel for private(x,ptr,inx_,inx_2)  schedule( static )
                 for(size_t i=1;i<ny_1;++i){//every black grid point  
                     inx_ = i*nx_;
-                    inx_2 = i*nx_2;
+                    inx_2 = inx_/2;
                     for(size_t j=((i&1)?1:2);j<nx__;j=j+2){
                         x = j/2+inx_2;
 						 ptr = (ur+x);
@@ -50,12 +50,11 @@ class RBGS{
                     }
 
                 }           
-                 //red
-			   	inx_ = inx_2 = 0;
+                 //red			   
                  #pragma omp parallel for private(x,ptr,inx_,inx_2) schedule( static )
                 for(size_t i=1;i<ny_1;++i){//every red grid point
                     inx_ = i*nx_;
-                    inx_2 = i*nx_2;
+                    inx_2 = inx_/2;
                     for(size_t j=((i&1)?2:1);j<nx__;j=j+2){
                         x = j/2+inx_2;
 						ptr = (ub+x);
