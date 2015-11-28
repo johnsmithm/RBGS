@@ -4,7 +4,7 @@
 
 class RBGS{
     public:
-        RBGS(int nx,int ny,int c):nx_(nx),ny_(ny),c_(c),pi(3.141592653589793){
+        RBGS(int nx,int ny,int c):nx_(nx+1),ny_(ny+1),c_(c),pi(3.141592653589793){
             //distance between grid points    
             hx_ = 2.0/nx;
             hy_ = 1.0/ny;
@@ -12,7 +12,7 @@ class RBGS{
             xst =  1.0/(hx_*hx_);
             yst =  1.0/(hy_*hy_);
             mst = 2.0/(hx_*hx_)+2.0/(hy_*hy_)+4*pi*pi;          
-            pg = nx*ny;
+            pg = nx_*ny_;
             //add a padding if nx_ is odd    //not for naive
             even = (nx_%2==0?true:false);
             nx_ = (even==true ? nx_ : nx_ + 1);               
@@ -101,7 +101,7 @@ class RBGS{
             for(int i=0;i<pg/2+1;++i)ur[i]=ub[i]=0;
  
             double SINH = sinh(2*pi);  
-            double CSINH = C*SINH;   
+            //double CSINH = C*SINH;   
             //set the nonnull boundary-. check what color is the first point of the last row
             double *ptrfirst = ur, *ptrsecond = ub;
             if(ny_%2==1){
@@ -110,8 +110,8 @@ class RBGS{
             }    
             for(int i=0;i<nx_;i+=2){   
                 int g =(ny_-1)*(nx_/2)+i/2;
-                ptrfirst[g] = sin(i*freqx) * CSINH;//sin(2πx) sinh(2πy)
-                ptrsecond[g] = sin((i+1)*freqx) * CSINH;//sin(2πx) sinh(2πy)
+                ptrfirst[g] = sin(i*freqx) * SINH;//sin(2πx) sinh(2πy)
+                ptrsecond[g] = sin((i+1)*freqx) * SINH;//sin(2πx) sinh(2πy)
             }
         }
         double residual_norm(){
@@ -145,7 +145,7 @@ class RBGS{
                     r2 = r2  + f_au*f_au;
                 }
             }
-            return sqrt(r1+r2);
+            return sqrt((r1+r2)/((nx__-2)*(ny_-2)));
         }
 
 
@@ -157,13 +157,13 @@ class RBGS{
                     for(int j=(i%2==0?0:1);j<nx__;j+=2){               
                         
                         int x = i*(nx_/2)+j/2;
-                        out<<(j*hy_)<<" "<<(i*hx_)<<" "<<ub[x]<<"\n";
+                        out<<(j*hx_)<<" "<<(i*hy_)<<" "<<ub[x]<<"\n";
                     }
                 }
                 for(int i=0;i<ny_;++i){//every red grid point
                     for(int j=(i%2==0?1:0);j<nx__;j+=2){                   
                         int x = i*(nx_/2)+j/2;
-                        out<<(j*hy_)<<" "<<(i*hx_)<<" "<<ur[x]<<"\n";
+                        out<<(j*hx_)<<" "<<(i*hy_)<<" "<<ur[x]<<"\n";
                          
                     }
                 }
